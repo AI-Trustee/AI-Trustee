@@ -2,23 +2,34 @@
 
 import { useEffect, useRef } from "react";
 
-interface Particle {
+interface Node {
   x: number;
   y: number;
-  vx: number;
-  vy: number;
   radius: number;
-  color: string;
-  alpha: number;
+  pulsePhase: number;
+  pulseSpeed: number;
+  connections: number[];
 }
 
-const COLORS = ["#10b981", "#06b6d4", "#3b82f6", "#f59e0b", "#8b5cf6"];
+interface TraceLine {
+  from: number;
+  to: number;
+  progress: number;
+  speed: number;
+  active: boolean;
+  cooldown: number;
+}
+
+const EMERALD = "#10b981";
+const CYAN = "#06b6d4";
+const AMBER = "#f59e0b";
 
 export function ConstellationBg() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -1000, y: -1000 });
-  const particlesRef = useRef<Particle[]>([]);
   const animRef = useRef<number>(0);
+  const nodesRef = useRef<Node[]>([]);
+  const tracesRef = useRef<TraceLine[]>([]);
+  const mouseRef = useRef({ x: -1000, y: -1000 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,75 +40,187 @@ export function ConstellationBg() {
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      initNodes();
     };
+
+    const initNodes = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      const spacing = 120;
+      const cols = Math.ceil(w / spacing) + 1;
+      const rows = Math.ceil(h / spacing) + 1;
+      const nodes: Node[] = [];
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const offsetX = r % 2 === 0 ? 0 : spacing * 0.5;
+          nodes.push({
+            x: c * spacing + offsetX + (Math.random() - 0.5) * 30,
+            y: r * spacing + (Math.random() - 0.5) * 30,
+            radius: Math.random() * 2 + 1,
+            pulsePhase: Math.random() * Math.PI * 2,
+            pulseSpeed: 0.005 + Math.random() * 0.01,
+            connections: [],
+          });
+        }
+      }
+
+      // Build connections (circuit traces) - connect nearby nodes with right-angle paths
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < spacing * 1.5 && Math.random() < 0.3) {
+            nodes[i].connections.push(j);
+          }
+        }
+      }
+
+      nodesRef.current = nodes;
+
+      // Create animated trace lines
+      const traces: TraceLine[] = [];
+      for (let i = 0; i < Math.min(8, nodes.length); i++) {
+        const nodeIdx = Math.floor(Math.random() * nodes.length);
+        const node = nodes[nodeIdx];
+        if (node.connections.length > 0) {
+          const connIdx = node.connections[Math.floor(Math.random() * node.connections.length)];
+          traces.push({
+            from: nodeIdx,
+            to: connIdx,
+            progress: 0,
+            speed: 0.003 + Math.random() * 0.005,
+            active: true,
+            cooldown: Math.random() * 300,
+          });
+        }
+      }
+      tracesRef.current = traces;
+    };
+
     resize();
     window.addEventListener("resize", resize);
-
-    const count = Math.min(80, Math.floor(window.innerWidth / 18));
-    particlesRef.current = Array.from({ length: count }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      radius: Math.random() * 1.5 + 0.5,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      alpha: Math.random() * 0.5 + 0.2,
-    }));
 
     const handleMouse = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
     };
     window.addEventListener("mousemove", handleMouse);
 
+    let frame = 0;
     const animate = () => {
+      frame++;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const particles = particlesRef.current;
+      const nodes = nodesRef.current;
+      const traces = tracesRef.current;
       const mouse = mouseRef.current;
 
-      for (const p of particles) {
-        const dx = p.x - mouse.x;
-        const dy = p.y - mouse.y;
+      // Draw circuit trace connections
+      for (const node of nodes) {
+        for (const connIdx of node.connections) {
+          const target = nodes[connIdx];
+          const midX = node.x;
+          const midY = target.y;
+
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(midX, midY);
+          ctx.lineTo(target.x, target.y);
+          ctx.strokeStyle = "rgba(16, 185, 129, 0.06)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Draw nodes
+      for (const node of nodes) {
+        const pulse = Math.sin(frame * node.pulseSpeed + node.pulsePhase);
+        const alpha = 0.15 + pulse * 0.1;
+        const r = node.radius + pulse * 0.5;
+
+        // Mouse proximity glow
+        const dx = node.x - mouse.x;
+        const dy = node.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 180) {
-          const force = (180 - dist) / 180;
-          p.vx += (dx / dist) * force * 0.2;
-          p.vy += (dy / dist) * force * 0.2;
+        const mouseAlpha = dist < 200 ? (200 - dist) / 200 * 0.4 : 0;
+
+        // Node dot
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = EMERALD;
+        ctx.globalAlpha = alpha + mouseAlpha;
+        ctx.fill();
+
+        // Node glow
+        if (mouseAlpha > 0.1) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, r + 4, 0, Math.PI * 2);
+          ctx.fillStyle = EMERALD;
+          ctx.globalAlpha = mouseAlpha * 0.15;
+          ctx.fill();
+        }
+      }
+
+      // Draw animated traveling pulses along traces
+      ctx.globalAlpha = 1;
+      for (const trace of traces) {
+        if (trace.cooldown > 0) {
+          trace.cooldown--;
+          continue;
         }
 
-        p.vx *= 0.99;
-        p.vy *= 0.99;
-        p.x += p.vx;
-        p.y += p.vy;
+        const fromNode = nodes[trace.from];
+        const toNode = nodes[trace.to];
+        if (!fromNode || !toNode) continue;
 
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
+        trace.progress += trace.speed;
+        if (trace.progress > 1) {
+          trace.progress = 0;
+          trace.cooldown = 100 + Math.random() * 200;
+          // Pick new random connection
+          const node = nodes[trace.from];
+          if (node.connections.length > 0) {
+            trace.to = node.connections[Math.floor(Math.random() * node.connections.length)];
+          }
+          continue;
+        }
 
+        // Right-angle path: go horizontal first, then vertical
+        const midX = fromNode.x;
+        const midY = toNode.y;
+
+        let px: number, py: number;
+        const totalDist = Math.abs(fromNode.y - midY) + Math.abs(midX - toNode.x);
+        const leg1 = Math.abs(fromNode.y - midY);
+        const leg1Ratio = totalDist > 0 ? leg1 / totalDist : 0.5;
+
+        if (trace.progress < leg1Ratio) {
+          const t = trace.progress / leg1Ratio;
+          px = fromNode.x;
+          py = fromNode.y + (midY - fromNode.y) * t;
+        } else {
+          const t = (trace.progress - leg1Ratio) / (1 - leg1Ratio);
+          px = midX + (toNode.x - midX) * t;
+          py = midY;
+        }
+
+        // Pulse dot
+        const isAmber = trace.from % 5 === 0;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha;
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = isAmber ? AMBER : CYAN;
+        ctx.globalAlpha = 0.8;
+        ctx.fill();
+
+        // Pulse glow
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = isAmber ? AMBER : CYAN;
+        ctx.globalAlpha = 0.15;
         ctx.fill();
       }
 
       ctx.globalAlpha = 1;
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 140) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(16, 185, 129, ${0.1 * (1 - dist / 140)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
-      }
-
       animRef.current = requestAnimationFrame(animate);
     };
 

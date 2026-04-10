@@ -54,8 +54,17 @@ export function ArchitectureSection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.15 * i, type: "spring" }}
-                className="glass-card rounded-xl px-5 py-5 text-center min-w-[130px] group hover:border-white/10 transition-all"
+                className="glass-card rounded-xl px-5 py-5 text-center min-w-[130px] group hover:border-white/10 transition-all relative overflow-hidden"
               >
+                {/* Circuit trace corners */}
+                <div className="absolute top-0 left-0 w-6 h-[1px] opacity-30" style={{ background: node.color }} />
+                <div className="absolute top-0 left-0 h-6 w-[1px] opacity-30" style={{ background: node.color }} />
+                <div className="absolute top-[-1px] left-[-1px] w-2 h-2 rounded-full opacity-50" style={{ background: node.color }} />
+
+                <div className="absolute bottom-0 right-0 w-6 h-[1px] opacity-30" style={{ background: node.color }} />
+                <div className="absolute bottom-0 right-0 h-6 w-[1px] opacity-30" style={{ background: node.color }} />
+                <div className="absolute bottom-[-1px] right-[-1px] w-2 h-2 rounded-full opacity-50" style={{ background: node.color }} />
+
                 <node.icon
                   className="w-8 h-8 mx-auto mb-2 transition-transform group-hover:scale-110"
                   style={{ color: node.color }}
@@ -70,10 +79,18 @@ export function ArchitectureSection() {
                   whileInView={{ scaleX: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 + i * 0.1 }}
-                  className="hidden md:flex items-center"
+                  className="hidden md:flex items-center relative"
                 >
-                  <div className="w-8 h-[2px] bg-gradient-to-r from-white/15 to-white/5" />
-                  <div className="w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-white/15" />
+                  {/* Circuit trace connector */}
+                  <div className="w-10 h-[2px]" style={{ background: `linear-gradient(to right, ${nodes[i].color}40, ${nodes[i + 1].color}40)` }} />
+                  {/* Traveling dot */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                    style={{
+                      background: nodes[i].color,
+                      animation: `travel-dot 2s ${i * 0.4}s ease-in-out infinite`,
+                    }}
+                  />
                 </motion.div>
               )}
             </div>
@@ -97,7 +114,7 @@ export function ArchitectureSection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.6 + i * 0.05 }}
-                className="px-3 py-1.5 rounded-full glass text-xs text-[#e2e8f0] hover:bg-white/10 transition-colors cursor-default"
+                className="px-3 py-1.5 rounded-full glass text-xs text-[#e2e8f0] hover:bg-[#10b981]/10 hover:border-[#10b981]/20 transition-colors cursor-default"
               >
                 {p}
               </motion.span>

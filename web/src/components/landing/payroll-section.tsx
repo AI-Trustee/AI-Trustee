@@ -100,7 +100,7 @@ export function PayrollSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="glass-card rounded-xl p-6 mb-16 max-w-3xl mx-auto"
+          className="glass-card rounded-xl p-6 mb-16 max-w-3xl mx-auto border-[#10b981]/10 relative overflow-hidden"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -131,8 +131,14 @@ export function PayrollSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 * i }}
-              className="glass-card rounded-xl p-6 hover:border-[#10b981]/20 transition-all group"
+              className="glass-card rounded-xl p-6 hover:border-[#10b981]/20 transition-all group relative overflow-hidden"
             >
+              {/* Circuit corner accent */}
+              <div className="absolute top-0 right-0 w-10 h-10">
+                <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-l from-[#10b981]/25 to-transparent" />
+                <div className="absolute top-0 right-0 h-full w-[1px] bg-gradient-to-b from-[#10b981]/25 to-transparent" />
+                <div className="absolute top-[-1px] right-[-1px] w-2 h-2 rounded-full bg-[#10b981]/30" />
+              </div>
               <f.icon className="w-8 h-8 text-[#10b981] mb-3 group-hover:scale-110 transition-transform" />
               <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
               <p className="text-[#94a3b8] text-sm">{f.desc}</p>

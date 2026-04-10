@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Shield, Users, Clock, Lock } from "lucide-react";
-import { ConstellationBg } from "../effects/constellation-bg";
+import Image from "next/image";
 
 const stats = [
   { icon: Users, label: "Batch Payroll", value: "Multi-recipient", color: "#10b981" },
@@ -14,18 +14,53 @@ const stats = [
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <ConstellationBg />
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        poster="/logo.jpeg"
+      >
+        <source src="/trustee.mp4" type="video/mp4" />
+      </video>
 
-      {/* Gradient overlays */}
+      {/* Dark overlay to ensure text readability */}
+      <div className="absolute inset-0 bg-[#0a0e1a]/60 z-[1]" />
+      {/* Bottom fade to next section */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0e1a] z-[1]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08)_0%,transparent_70%)] z-[1]" />
+      {/* Center vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,14,26,0.5)_100%)] z-[1]" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, type: "spring" }}
+          className="flex justify-center mb-6"
+        >
+          <div className="relative">
+            <Image
+              src="/logo.jpeg"
+              alt="AI-Trustee"
+              width={88}
+              height={88}
+              className="rounded-2xl"
+              priority
+            />
+            {/* Circuit glow ring */}
+            <div className="absolute -inset-2 rounded-2xl border border-[#10b981]/30" style={{ animation: "pulse-glow 4s ease-in-out infinite" }} />
+            <div className="absolute -inset-4 rounded-3xl border border-[#10b981]/15" />
+          </div>
+        </motion.div>
+
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
@@ -36,7 +71,7 @@ export function HeroSection() {
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
           className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
         >
           <span className="text-gradient">AI-Trustee</span>
@@ -50,8 +85,8 @@ export function HeroSection() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-lg md:text-xl text-[#94a3b8] max-w-2xl mx-auto mb-12"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="text-lg md:text-xl text-[#c8cdd8] max-w-2xl mx-auto mb-12"
         >
           Batch salary distribution and programmable trust funds with time-lock,
           periodic, and milestone-based releases. All signed in TEE, all audited on X Layer.
@@ -61,18 +96,18 @@ export function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
           className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
         >
           <a
             href="#architecture"
-            className="px-8 py-3 rounded-lg bg-[#10b981] text-[#0a0e1a] font-semibold hover:bg-[#059669] transition-colors"
+            className="group relative px-8 py-3 rounded-lg bg-[#10b981] text-[#0a0e1a] font-semibold hover:bg-[#059669] transition-colors overflow-hidden"
           >
-            Explore Architecture
+            <span className="relative z-10">Explore Architecture</span>
           </a>
           <a
             href="#payroll"
-            className="px-8 py-3 rounded-lg glass hover:bg-white/10 transition-colors font-medium"
+            className="px-8 py-3 rounded-lg glass hover:bg-white/10 transition-colors font-medium border border-[#10b981]/20 hover:border-[#10b981]/40"
           >
             View Features
           </a>
@@ -82,7 +117,7 @@ export function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {stats.map((stat, i) => (
@@ -90,9 +125,13 @@ export function HeroSection() {
               key={stat.label}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
-              className="glass-card rounded-xl p-4 hover:border-white/10 transition-all group"
+              transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
+              className="glass-card rounded-xl p-4 transition-all group hover:border-[#10b981]/15 relative overflow-hidden"
             >
+              {/* Circuit corner accent */}
+              <div className="absolute top-0 right-0 w-8 h-8 border-t border-r opacity-20 rounded-tr-xl" style={{ borderColor: stat.color }} />
+              <div className="absolute top-[7px] right-[7px] w-1.5 h-1.5 rounded-full opacity-30" style={{ background: stat.color }} />
+
               <stat.icon
                 className="w-6 h-6 mx-auto mb-2 transition-transform group-hover:scale-110"
                 style={{ color: stat.color }}
@@ -107,11 +146,11 @@ export function HeroSection() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
+          transition={{ delay: 1.8 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           style={{ animation: "float 3s ease-in-out infinite" }}
         >
-          <div className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center pt-2">
+          <div className="w-6 h-10 rounded-full border-2 border-[#10b981]/30 flex justify-center pt-2">
             <div className="w-1 h-2 rounded-full bg-[#10b981] animate-bounce" />
           </div>
         </motion.div>
