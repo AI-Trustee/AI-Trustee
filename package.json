@@ -1,0 +1,21 @@
+{
+  "name": "ai-trustee",
+  "version": "1.0.0",
+  "description": "On-chain payroll distribution and trust fund management platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc",
+    "dev:web": "cd web && npm run dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
